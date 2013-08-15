@@ -1,0 +1,21 @@
+[
+{
+  "modid": "SimpleMenu",
+  "name": "SimpleMenu",
+  "description": "A main menu revamp!",
+  "version": "1.0.36",
+  "mcversion": "1.6.2",
+  "url": "http://arilotter.com/",
+  "updateUrl": "",
+  "authors": [
+    "Aerobit"
+  ],
+  "credits": "Thanks to #minecraftforge & #mcp-modding",
+  "logoFile": "",
+  "screenshots": [
+  ],
+  "parent":"",
+  "dependencies": [
+  ]
+}
+]

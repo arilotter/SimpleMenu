@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<project name="simplemenu" default="release">
+
+    <property file="build.properties" prefix="build"/>
+    <property file="build_number.properties" prefix="build_number"/>
+
+    <target name="clean">
+        <delete file="${build.dir.development}\forge\mcp\src\minecraft\mcmod.info"/>
+        <delete dir="${build.dir.development}\forge\mcp\src\minecraft\com"/>
+        <delete dir="${build.dir.development}\forge\mcp\reobf\minecraft"/>
+    </target>
+
+    <target name="increment_build_number">
+        <propertyfile file="build_number.properties">
+            <entry key="build_number" type="int" operation="+" default="1"/>
+        </propertyfile>
+    </target>
+
+    <target name="prep">
+        <copy todir="${build.dir.development}\forge\mcp\src\minecraft">
+            <fileset dir="${build.dir.development}\source\${ant.project.name}\src"/>
+        </copy>
+    </target>
+
+    <target name="replace_tokens">
+        <replace file="${build.dir.development}\source\${ant.project.name}\mcmod.info" token="@VERSION@"
+                 value="${build.release.mod.version}"/>
+        <replace file="${build.dir.development}\source\${ant.project.name}\mcmod.info" token="@BUILD_NUMBER@"
+                 value="${build_number.build_number}"/>
+        <replace file="${build.dir.development}\source\${ant.project.name}\mcmod.info" token="@MCVERSION@"
+                 value="${build.release.minecraft.version}"/>
+    </target>
+
+    <target name="recompile">
+        <exec dir="${build.dir.development}\forge\mcp" executable="cmd" osfamily="windows">
+            <arg line="/c recompile.bat"/>
+        </exec>
+        <exec dir="${build.dir.development}\forge\mcp" executable="bash" osfamily="unix">
+            <arg line="recompile.sh"/>
+        </exec>
+    </target>
+
+    <target name="reobfuscate">
+        <exec dir="${build.dir.development}\forge\mcp" executable="cmd" osfamily="windows">
+            <arg line="/c reobfuscate_srg.bat"/>
+        </exec>
+        <exec dir="${build.dir.development}\forge\mcp" executable="bash" osfamily="unix">
+            <arg line="reobfuscate_srg.sh"/>
+        </exec>
+    </target>
+
+    <target name="release">
+        <!-- Prep for the build -->
+        <antcall target="clean"/>
+        <antcall target="increment_build_number"/>
+        <antcall target="prep"/>
+        <antcall target="replace_tokens"/>
+        <antcall target="recompile"/>
+        <antcall target="reobfuscate"/>
+
+        <!-- Build the jar -->
+        <mkdir dir="${build.dir.development}\release\${ant.project.name}\minecraft ${build.release.minecraft.version}"/>
+        <jar destfile="${build.dir.development}\release\${ant.project.name}\minecraft ${build.release.minecraft.version}\${ant.project.name}-v${build.release.mod.version}.${build_number.build_number}-mc_${build.release.minecraft.version}.jar">
+            <fileset dir="${build.dir.development}\source\${ant.project.name}" includes="mcmod.info,LICENSE,README"/>
+            <fileset dir="${build.dir.development}\forge\mcp\reobf\minecraft"/>
+            <fileset dir="${build.dir.development}\source\${ant.project.name}\" includes="assets/**"/>
+        </jar>
+
+
+        <!-- Clean up the MCP source folder now that we're done -->
+        <antcall target="clean"/>
+    </target>
+</project>
